@@ -8,8 +8,49 @@
   - `npm run test-expenditure-analysis`
 */
 
+// function calculateTotalSpentByCategory(transactions) {
+//   var totalSpents = [];
+//   transactions.forEach(elementtransaction => {
+//       var categoryFound = false;
+//       totalSpents.forEach(elementSpent => {
+//         if(elementSpent.category == elementtransaction.category){
+//           categoryFound = true;
+//           elementSpent.totalSpent = elementSpent.totalSpent + elementtransaction.price;
+//         }
+//       });
+//       if(!categoryFound){
+//         var elementSpent = {"category" : elementtransaction.category, "totalSpent" : elementtransaction.price}
+//         totalSpents.push(elementSpent);
+//       }
+// });
+// return totalSpents;
+// }
+
+
+
+
 function calculateTotalSpentByCategory(transactions) {
-  return [];
+  var Output = [];
+  var accountKeeper = {};
+
+  transactions.forEach(transaction => {
+    if(Object.keys(accountKeeper).includes(transaction.category)){
+      accountKeeper[transaction.category] = accountKeeper[transaction.category] + transaction.price;
+    }
+    else{
+      console.log("transaction.category 2", transaction.category);
+      accountKeeper[transaction.category+""] = transaction.price;
+    }
+  });
+
+  Object.keys(accountKeeper).forEach(category => {
+    Output.push({"category" : category, "totalSpent": accountKeeper[category]} )
+  });
+     
+
+  return Output;
 }
+
+
 
 module.exports = calculateTotalSpentByCategory;
