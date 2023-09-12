@@ -43,7 +43,82 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
-
 app.use(bodyParser.json());
 
+var todoList = [];
+
+// app.listen(3000, function () {
+//   console.log("Listening on Port 3000")
+// });
+
+app.get("/todos", function (req, res) {
+  res.status(200).send(todoList);
+});
+
+app.get("/todos/:id", function (req, res) {
+  var id = req.params.id;
+  var idFound = false;
+  todoList.forEach(element => {
+      if(element.id == id){
+        idFound = true;
+        res.send(element);
+      }
+  });
+  if(!idFound){
+    res.status(404).send("No todo found..");
+  }
+});
+
+app.post("/todos", function (req, res) {
+  var id = todoList.length + 1;
+  var toDo = {
+    "id" : id,
+    "title": req.body.title,
+    "completed": req.body.completed ?  req.body.completed : false, 
+    "description" : req.body.description
+  }
+  todoList.push(toDo);
+  res.status(201).send({ "id" :  id});
+});
+
+app.put("/todos/:id", function (req, res) {
+  var id = req.params.id;
+  var idFound = false;
+
+  for (let [index, element] of todoList.entries()) {
+    if(element.id == id){
+      idFound = true;
+      var updatedTodo = {
+        "id" : id,
+        "title": req.body.title,
+        "completed": req.body.completed, 
+        "description" : req.body.description
+      }
+      todoList[index] = updatedTodo;
+      res.status(200).send({ "id" :  id});
+    }
+  }
+  if(!idFound){
+    res.status(404).send("No todo found..");
+  }
+});
+
+app.delete("/todos/:id", function (req, res) {
+  var id = req.params.id;
+  var idFound = false;
+  for (let [index, element] of todoList.entries()) {
+    if(element.id == id){
+      idFound = true;
+      todoList.splice(index, 1);
+      res.status(200).send("item deleted");
+    }
+  }
+  if(!idFound){
+    res.status(404).send("No todo found..");
+  }
+});
+
+
 module.exports = app;
+
+
