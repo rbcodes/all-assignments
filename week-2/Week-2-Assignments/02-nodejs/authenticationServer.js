@@ -10,6 +10,7 @@
     Request Body: JSON object with username, password, firstName and lastName fields.
     Response: 201 Created if successful, or 400 Bad Request if the username already exists.
     Example: POST http://localhost:3000/signup
+  
 
   2. POST /login - User Login
     Description: Gets user back their details like firstname, lastname and id
@@ -32,7 +33,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 app.use(bodyParser.json());
-// write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
+// write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server.
 
 users = [];
 
