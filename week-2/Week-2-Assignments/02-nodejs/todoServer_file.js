@@ -39,29 +39,57 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-const express = require('express');
-const bodyParser = require('body-parser');
-
+const express = require("express");
+const bodyParser = require("body-parser");
+const fs = require("fs").promises;
 const app = express();
 app.use(bodyParser.json());
 
-var todoList = [];
+// app.listen(3000, function () {
+//   console.log("Listening on Port 3000");
+// });
 
-app.listen(3000, function () {
-  console.log("Listening on Port 3000")
+async function getTodo() {
+  var filePath = "./files/todoList.txt";
+  try {
+    const file = await fs.readFile(filePath, "utf8");
+    if(file && file.length > 0){
+      return JSON.parse(file);
+    }
+    else{
+      return JSON.parse("[]");
+    }
+  } catch (e) {
+    console.log("Error Reading File!", e);
+    return false;
+  }
+}
+async function writeTodo(todoList) {
+  var filePath = "./files/todoList.txt";
+  try {
+    const file =  await fs.writeFile(filePath, JSON.stringify(todoList), 'utf8');
+    console.log("The file was saved!");
+    return true;
+  } catch (e) {
+    console.log("Error Writing File!", e);
+    return false;
+  }
+}
+
+app.get("/todos", async function (req, res) {
+  var todoList = await getTodo();
+  if(todoList){
+    res.status(200).send(todoList);
+  }
+  else{
+    res.status(400).send("Error!");
+  }
 });
 
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/solutions/index.html");
-});
-
-app.get("/todos", function (req, res) {
-  res.status(200).send(todoList);
-});
-
-app.get("/todos/:id", function (req, res) {
+app.get("/todos/:id", async function (req, res) {
   var id = req.params.id;
   var idFound = false;
+  var todoList = await getTodo();
   todoList.forEach(element => {
       if(element.id == id){
         idFound = true;
@@ -73,32 +101,37 @@ app.get("/todos/:id", function (req, res) {
   }
 });
 
-app.post("/todos", function (req, res) {
+app.post("/todos", async function (req, res) {
+  var todoList = await getTodo();
   var id = todoList.length + 1;
+  console.log(todoList);
   var toDo = {
     "id" : id,
     "title": req.body.title,
-    "completed": req.body.completed ?  req.body.completed : false, 
+    "completed": req.body.completed ?  req.body.completed : false,
     "description" : req.body.description
   }
   todoList.push(toDo);
+  console.log(todoList);
+  const wfile = await writeTodo(todoList);
   res.status(201).send({ "id" :  id});
 });
 
-app.put("/todos/:id", function (req, res) {
+app.put("/todos/:id", async function (req, res) {
   var id = req.params.id;
   var idFound = false;
-
+  var todoList = await getTodo();
   for (let [index, element] of todoList.entries()) {
     if(element.id == id){
       idFound = true;
       var updatedTodo = {
         "id" : id,
         "title": req.body.title,
-        "completed": req.body.completed, 
+        "completed": req.body.completed,
         "description" : req.body.description
       }
       todoList[index] = updatedTodo;
+      await writeTodo(todoList);
       res.status(200).send({ "id" :  id});
     }
   }
@@ -107,13 +140,15 @@ app.put("/todos/:id", function (req, res) {
   }
 });
 
-app.delete("/todos/:id", function (req, res) {
+app.delete("/todos/:id", async function (req, res) {
   var id = req.params.id;
   var idFound = false;
+  var todoList = await getTodo();
   for (let [index, element] of todoList.entries()) {
     if(element.id == id){
       idFound = true;
       todoList.splice(index, 1);
+      await writeTodo(todoList);
       res.status(200).send("item deleted");
     }
   }
@@ -122,7 +157,4 @@ app.delete("/todos/:id", function (req, res) {
   }
 });
 
-
 module.exports = app;
-
-
