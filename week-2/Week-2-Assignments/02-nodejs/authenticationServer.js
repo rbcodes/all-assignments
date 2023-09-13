@@ -1,7 +1,6 @@
 /**
   You need to create a HTTP server in Node.js which will handle the logic of an authentication server.
   - Don't need to use any database to store the data.
-
   - Save the users and their signup/login data in an array in a variable
   - You can store the passwords in plain text (as is) in the variable for now
 
@@ -29,11 +28,87 @@
   Testing the server - run `npm run test-authenticationServer` command in terminal
  */
 
-const express = require("express")
-const PORT = 3000;
+const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
+app.use(bodyParser.json());
 // write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
 
+users = [];
 
+app.post("/signup", function (req, res) {
+  var userExists = false;
+  try {
+    let id = Date.now() + Math.floor(Math.random());
+    users.forEach(element => {
+      if(element.username == req.body.email){
+        res.status(400).send("Username already exists");
+        userExists =true;
+      }
+    });
+    if(!userExists){
+      var newUser = {
+        id: id,
+        username: req.body.email,
+        password: req.body.password,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+      };
+      users.push(newUser);
+      res.status(201).send("Signup successful")
+    }
+  } catch (error) {
+    console.log("Error in creating user!", error);
+    res.status(400).send("Error in creating user!");
+  }
+});
+
+app.post("/login", function (req, res) {
+
+  var userExists = false;
+  try {
+    users.forEach(element => {
+      if(element.username == req.body.email){
+        if(element.password == req.body.password){
+          userExists =true;
+          res.json({
+            firstName: element.firstName,
+            lastName: element.lastName,
+            email: element.username
+        });
+        }
+      }
+    });
+    if(!userExists){
+      res.status(401).send("Unauthorized");
+    }
+  } catch (error) {
+    console.log("Error in Loging in user!", error);
+    res.status(400).send("Error in Loging user!");
+  }
+});
+
+app.get("/data", function (req, res) {
+  var userExists = false;
+  try {
+    users.forEach(element => {
+      if(element.username == req.headers.email){
+        if(element.password == req.headers.password){
+          userExists =true;
+        }
+      }
+    });
+    if(!userExists){
+      res.status(401).send("Unauthorized");
+    }
+    else{
+      const usersList = users.map(({username,firstName,lastName}) => ({username,firstName,lastName}));
+      res.json({users :usersList})
+    }
+  } catch (error) {
+    console.log("Error in Fetching userList!", error);
+    res.status(400).send("Error in Fetching user List!");
+  }
+});
 
 module.exports = app;
