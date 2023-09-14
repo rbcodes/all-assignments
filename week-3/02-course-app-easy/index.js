@@ -10,10 +10,40 @@ let COURSES = [];
 // Admin routes
 app.post('/admin/signup', (req, res) => {
   // logic to sign up admin
+  // Description: Creates a new admin account.
+  // Input: { username: 'admin', password: 'pass' }
+  // Output: { message: 'Admin created successfully' }
+  var userN = req.body.username;
+  var userP = req.body.password;
+  var userExists = false;
+  ADMINS.forEach(element => {
+      if(element.username == userN){
+        userExists = true;
+        res.status(400).send("Admin already Registered");
+      }
+  });
+  if(!userExists){
+    var user = {
+      username : userN,
+      password : userP
+    }
+    ADMINS.push(user);
+    res.send("Admin created successfully");
+  }
 });
 
 app.post('/admin/login', (req, res) => {
   // logic to log in admin
+  var userExists = false;
+      ADMINS.forEach(element => {
+        if(element.username == req.body.username && element.password == req.body.password ){
+          userExists = true;
+          res.send("Logged in successfully");
+        }
+    });
+    if(!userExists){
+      res.status(404).send("Error Logging in!");
+    }
 });
 
 app.post('/admin/courses', (req, res) => {
